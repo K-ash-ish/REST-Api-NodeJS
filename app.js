@@ -49,11 +49,37 @@ app.set("view engine", ejs);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-app.get("/", function (request, response) {
-  Article.find({}, function(err, docs){
+app.route("/articles")
+
+  .get(function (request, response) {
+    Article.find({}, function (err, docs) {
       response.send(docs);
+    });
   })
-});
+
+  .post(function (request, response) {
+    const newArticle = new Article({
+      title: request.query.title,
+      content: request.query.content,
+    });
+    newArticle.save(function (err) {
+      if (!err) {
+        response.send("Successs");
+      } else {
+        response.send("Error");
+      }
+    });
+  })
+
+  .delete(function (req, res) {
+    Article.deleteMany({}, function (err) {
+      if (!err) {
+        res.send("success deleted");
+      } else {
+        res.send(err);
+      }
+    });
+  });
 
 app.listen(port, function (request, response) {
   console.log("Server started at ", port);
