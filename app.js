@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
+const _ = require("lodash");
 const app = express();
 const port = 3000;
 // db created successfully
@@ -49,7 +50,8 @@ app.set("view engine", ejs);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-app.route("/articles")
+app
+  .route("/articles")
 
   .get(function (request, response) {
     Article.find({}, function (err, docs) {
@@ -80,6 +82,48 @@ app.route("/articles")
       }
     });
   });
+/// for getting single article
+app
+  .route("/articles/:articleTitle")
+  .get(function (req, res) {
+    Article.find({ title: req.params.articleTitle }, function (err, result) {
+      res.send(result);
+    });
+  })
+  .put(function (req, res) {
+    Article.updateOne(
+      { title: req.params.articleTitle },
+      {title: req.query.title,
+       content: req.query.content},
+      function (err, docs) {
+        if (!err) {
+          res.send("Success updating");
+        } else {
+          res.send("errror");
+        }
+      }
+    );
+  })
+  .patch(function(req, res){
+    Article.updateOne({title: req.params.articleTitle}, {$set: req.query}, function(err){
+      if(!err){
+        res.send("Updated the req field");
+      }
+      else{
+        res.send(err);
+      }
+    })
+  })
+  .delete(function(req, res){
+    Article.deleteOne({title: req.params.articleTitle}, function(err){
+      if(err){
+        res.send("Error deleting " + err);
+      }
+      else{
+        res.send("Successfully deleted the article");
+      }
+    })
+  })
 
 app.listen(port, function (request, response) {
   console.log("Server started at ", port);
